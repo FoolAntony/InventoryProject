@@ -9,6 +9,10 @@
 /**
  * 
  */
+
+class UInputMappingContext;
+class UInputAction;
+
 UCLASS()
 class INVENTORY_API AInv_PlayerController : public APlayerController
 {
@@ -16,4 +20,18 @@ class INVENTORY_API AInv_PlayerController : public APlayerController
 
 protected:
 	virtual void BeginPlay() override;
+
+private:
+	//	FUNCTIONS
+
+	void PrimaryInteract();
+	virtual void SetupInputComponent() override;
+
+	//	PARAMETERS & VARIABLES
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TObjectPtr<UInputAction> PrimaryInteractionAction;
 };
