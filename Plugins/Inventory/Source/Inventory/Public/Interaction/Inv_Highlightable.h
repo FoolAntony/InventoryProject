@@ -14,7 +14,8 @@ class UInv_Highlightable : public UInterface
 };
 
 /**
- * 
+ * Interface for highlightable objects;
+ * Provides functions to dynamically change object's material and *Highlight* it when traced by Player
  */
 class INVENTORY_API IInv_Highlightable
 {
@@ -26,9 +27,10 @@ public:
 	//	FUNCTIONS
 	//====================
 
-	UFUNCTION(BlueprintNativeEvent, Category = Inv_Highlightable)
+	//BlueprintNativeEvent allows to access functions as event in blueprints, and override them in classes inherited this interface
+	UFUNCTION(BlueprintNativeEvent, Category = "Inventory")
 	void Highlight();
-	UFUNCTION(BlueprintNativeEvent, Category = Inv_Highlightable)
+	UFUNCTION(BlueprintNativeEvent, Category = "Inventory")
 	void UnHighlight();
 	
 };

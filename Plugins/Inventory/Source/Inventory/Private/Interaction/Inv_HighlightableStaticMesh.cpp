@@ -5,6 +5,7 @@
 
 void UInv_HighlightableStaticMesh::Highlight_Implementation()
 {
+	//setting overlay material to Highlight material
 	SetOverlayMaterial(HighlightMaterial);
 }
 

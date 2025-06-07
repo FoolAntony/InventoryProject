@@ -7,7 +7,8 @@
 #include "Inv_PlayerController.generated.h"
 
 /**
- * 
+ *  Inventory Plugin PlayerController functionality;
+ *  When implemented, enables object tracing and Enhanced Input System for interaction
  */
 
 class UInputMappingContext;
@@ -40,8 +41,12 @@ private:
 	//	FUNCTIONS
 	//====================
 
+	/*Interaction function primarily used by class*/
 	void PrimaryInteract();
+	
+	/*Creates player's HUD widget object*/
 	void CreateHUDWidget();
+	
 	void TraceForItem();
 
 	//=========================
@@ -49,7 +54,7 @@ private:
 	//=========================
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	TObjectPtr<UInputMappingContext> DefaultMappingContext;
+	TObjectPtr<UInputMappingContext> DefaultMappingContext; // Function stores default mapping context blueprint used by PlayerController
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TObjectPtr<UInputAction> PrimaryInteractionAction;
@@ -61,12 +66,12 @@ private:
 	TObjectPtr<UInv_HUDWidget> HUDWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	double TraceLength;
+	double TraceLength; // Path from trace start point (screen center) to endpoint
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	TEnumAsByte<ECollisionChannel> ItemTraceChannel;
+	TEnumAsByte<ECollisionChannel> ItemTraceChannel; //Collision channel used for item trace;
 
-	// creating weak pointer so it could be garbage collected with no affect on runtime
-	TWeakObjectPtr<AActor> ThisActor;
-	TWeakObjectPtr<AActor> LastActor;
+	// Creating weak pointers so it could be garbage collected with no effect on runtime
+	TWeakObjectPtr<AActor> ThisActor; // Currently traced object
+	TWeakObjectPtr<AActor> LastActor; // Last traced object
 };
