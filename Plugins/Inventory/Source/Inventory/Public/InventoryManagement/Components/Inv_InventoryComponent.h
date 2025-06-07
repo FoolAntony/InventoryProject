@@ -2,26 +2,55 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Inv_InventoryComponent.generated.h"
 
+/*
+ *  Inventory object component
+ *  Requires inventory widget to create in a viewport
+ */
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class UInv_InventoryBase;
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class INVENTORY_API UInv_InventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
+	//====================
+	//	FUNCTIONS
+	//====================
+	
 	UInv_InventoryComponent();
 
+	void ToggleInventoryMenu();
+
 protected:
-	// Called when the game starts
+	//====================
+	//	FUNCTIONS
+	//====================
+	
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+private:
+	//====================
+	//	FUNCTIONS
+	//====================
+	
+	void ConstructInventory();
+
+	//=========================
+	//	PARAMETERS & VARIABLES
+	//=========================
+
+	TWeakObjectPtr<APlayerController> OwningController;
+	
+	UPROPERTY()
+	TObjectPtr<UInv_InventoryBase> InventoryMenu;
+	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
 };
