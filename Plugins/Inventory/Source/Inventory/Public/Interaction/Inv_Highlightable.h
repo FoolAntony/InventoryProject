@@ -22,4 +22,13 @@ class INVENTORY_API IInv_Highlightable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	//====================
+	//	FUNCTIONS
+	//====================
+
+	UFUNCTION(BlueprintNativeEvent, Category = Inv_Highlightable)
+	void Highlight();
+	UFUNCTION(BlueprintNativeEvent, Category = Inv_Highlightable)
+	void UnHighlight();
+	
 };
