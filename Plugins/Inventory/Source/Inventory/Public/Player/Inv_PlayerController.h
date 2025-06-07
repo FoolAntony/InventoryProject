@@ -11,6 +11,7 @@
  *  When implemented, enables object tracing and Enhanced Input System for interaction
  */
 
+class UInv_InventoryComponent;
 class UInputMappingContext;
 class UInputAction;
 class UInv_HUDWidget;
@@ -27,6 +28,9 @@ public:
 	
 	AInv_PlayerController();
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ToggleInventory();
 
 protected:
 	//====================
@@ -60,6 +64,9 @@ private:
 	TObjectPtr<UInputAction> PrimaryInteractionAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TObjectPtr<UInputAction> ToggleInventoryAction; //Stores action for inventory toggling (on/off)
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TSubclassOf<UInv_HUDWidget> HUDWidgetClass;
 
 	UPROPERTY()
@@ -74,4 +81,5 @@ private:
 	// Creating weak pointers so it could be garbage collected with no effect on runtime
 	TWeakObjectPtr<AActor> ThisActor; // Currently traced object
 	TWeakObjectPtr<AActor> LastActor; // Last traced object
+	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
 };

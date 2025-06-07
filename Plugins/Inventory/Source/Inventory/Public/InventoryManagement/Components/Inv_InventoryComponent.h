@@ -41,6 +41,8 @@ private:
 	//====================
 	
 	void ConstructInventory();
+	void OpenInventoryMenu();
+	void CloseInventoryMenu();
 
 	//=========================
 	//	PARAMETERS & VARIABLES
@@ -53,4 +55,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
+
+	bool bInventoryMenuOpen;
+	
 };
