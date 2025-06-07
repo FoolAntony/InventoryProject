@@ -5,7 +5,21 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 #include "Widgets/HUD/Inv_HUDWidget.h"
+
+AInv_PlayerController::AInv_PlayerController()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	TraceLength = 500.f;
+}
+
+void AInv_PlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	TraceForItem();
+}
 
 void AInv_PlayerController::BeginPlay()
 {
@@ -47,6 +61,41 @@ void AInv_PlayerController::CreateHUDWidget()
 	if (IsValid(HUDWidget))
 	{
 		HUDWidget->AddToViewport();
+	}
+}
+
+void AInv_PlayerController::TraceForItem()
+{
+	if (!IsValid(GEngine) || !IsValid(GEngine->GameViewport)) return; // exit function if GEngine or GameViewport do not exist
+
+	//Getting the center of a screen in Game World space
+	FVector2D ViewportSize;
+	GEngine->GameViewport->GetViewportSize(ViewportSize);
+	const FVector2D ViewportCenter = ViewportSize / 2.f;
+	FVector TraceStart;
+	FVector Forward;
+	
+	//if not possible to deproject screen to worldspace, exit function
+	if (!UGameplayStatics::DeprojectScreenToWorld(this, ViewportCenter, TraceStart, Forward)) return;
+
+	const FVector TraceEnd = TraceStart + Forward * TraceLength; //Forward vector specifies direction, then multiplies by length to generate vector of this length
+	
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ItemTraceChannel); //store data of any hit result with Item channel enabled objects
+
+	LastActor = ThisActor;
+	ThisActor = HitResult.GetActor();
+
+	if (ThisActor == LastActor) return;
+
+	if (ThisActor.IsValid())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Started Tracing a new actor"));
+	}
+
+	if (LastActor.IsValid())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Ended Tracing a new actor"));
 	}
 }
 

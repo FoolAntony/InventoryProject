@@ -19,20 +19,34 @@ class INVENTORY_API AInv_PlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	//====================
+	//	FUNCTIONS
+	//====================
+	
+	AInv_PlayerController();
+	virtual void Tick(float DeltaTime) override;
+
 protected:
-	// FUNCTIONS
+	//====================
+	//	FUNCTIONS
+	//====================
 	
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
 private:
+	//====================
 	//	FUNCTIONS
+	//====================
 
 	void PrimaryInteract();
 	void CreateHUDWidget();
+	void TraceForItem();
 
-
+	//=========================
 	//	PARAMETERS & VARIABLES
+	//=========================
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
@@ -45,4 +59,14 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UInv_HUDWidget> HUDWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	double TraceLength;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TEnumAsByte<ECollisionChannel> ItemTraceChannel;
+
+	// creating weak pointer so it could be garbage collected with no affect on runtime
+	TWeakObjectPtr<AActor> ThisActor;
+	TWeakObjectPtr<AActor> LastActor;
 };
