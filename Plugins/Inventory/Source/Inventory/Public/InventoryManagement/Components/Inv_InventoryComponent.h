@@ -77,7 +77,7 @@ private:
 	UPROPERTY(Replicated)
 	FInv_InventoryFastArray InventoryList;
 	
-	/*Stores currently owning PlayerController*/
+	/*Stores currently owning PlayerController */
 	TWeakObjectPtr<APlayerController> OwningController;
 	
 	UPROPERTY()
