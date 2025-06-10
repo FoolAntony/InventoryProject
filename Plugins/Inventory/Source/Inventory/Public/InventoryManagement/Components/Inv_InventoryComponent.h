@@ -28,7 +28,7 @@ class INVENTORY_API UInv_InventoryComponent : public UActorComponent
 public:
 	//====================
 	//	FUNCTIONS
-	//====================
+	//==================== 
 	
 	UInv_InventoryComponent();
 
