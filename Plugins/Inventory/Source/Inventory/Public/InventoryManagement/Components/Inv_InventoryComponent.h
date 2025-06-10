@@ -47,7 +47,8 @@ private:
 	//=========================
 	//	PARAMETERS & VARIABLES
 	//=========================
-
+	
+	/*Stores currently owning PlayerController*/
 	TWeakObjectPtr<APlayerController> OwningController;
 	
 	UPROPERTY()

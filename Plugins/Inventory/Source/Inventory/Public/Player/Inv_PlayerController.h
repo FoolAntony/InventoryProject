@@ -44,7 +44,7 @@ private:
 	//====================
 	//	FUNCTIONS
 	//====================
-
+	
 	/*Interaction function primarily used by class*/
 	void PrimaryInteract();
 	
