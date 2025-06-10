@@ -61,7 +61,14 @@ void AInv_PlayerController::SetupInputComponent()
 // Primary function when interact is triggered
 void AInv_PlayerController::PrimaryInteract()
 {
-	UE_LOG(LogTemp, Log, TEXT("Primary Interact"));
+	if (!ThisActor.IsValid()) return;
+
+	UInv_ItemComponent* ItemComp = ThisActor->FindComponentByClass<UInv_ItemComponent>();
+	if (!IsValid(ItemComp) || !InventoryComponent.IsValid()) return;
+
+	InventoryComponent->TryAddItem(ItemComp);
+
+	
 }
 
 // Creates UI HUD Component when called
