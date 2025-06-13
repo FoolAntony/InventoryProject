@@ -7,6 +7,9 @@
 #include "Types/Inv_GridTypes.h"
 #include "Inv_InventoryGrid.generated.h"
 
+struct FInv_ImageFragment;
+struct FInv_GridFragment;
+class UInv_SlottedItem;
 struct FInv_ItemManifest;
 class UInv_ItemComponent;
 class UInv_InventoryComponent;
@@ -45,12 +48,32 @@ private:
 	FInv_SlotAvailabilityResult HasRoomForItem (const FInv_ItemManifest& Manifest);
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
 	
+	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
+	
+	UInv_SlottedItem* CreateSlottedItem(
+		UInv_InventoryItem* Item,
+		const bool bStackable,
+		const int32 StackAmount,
+		const FInv_GridFragment* GridFragment,
+		const FInv_ImageFragment* ImageFragment,
+		const int32 Index);
+	
+	void SetSlottedItemImage(
+		const UInv_SlottedItem* SlottedItem,
+		const FInv_GridFragment* GridFragment,
+		const FInv_ImageFragment* ImageFragment) const;
+	
+	FVector2D GetImageDrawSize (const FInv_GridFragment* GridFragment) const;
+	
 	
 	//=========================
 	//	PARAMETERS & VARIABLES
 	//=========================
 
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_SlottedItem> SlottedItemClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true") ,Category = "Inventory")
 	EInv_ItemCategory ItemCategory;
