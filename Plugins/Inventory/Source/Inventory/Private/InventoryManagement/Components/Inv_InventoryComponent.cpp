@@ -49,6 +49,7 @@ void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 	{
 		// Add stacks to an item that already exists in the inventory. Only update existing stack count,
 		// not creating new item of this type
+		OnStackChanged.Broadcast(Result);
 		Server_AddStacksToItem(ItemComponent, Result.TotalRoomToFill, Result.Remainder);
 	}
 	else if (Result.TotalRoomToFill > 0)
@@ -79,7 +80,7 @@ void UInv_InventoryComponent::Server_AddStacksToItem(UInv_ItemComponent* ItemCom
 	UInv_InventoryItem* Item = InventoryList.FindFirstItemByType(ItemType);
 	if (!IsValid(Item)) return;
 
-	Item->SetTotalStackCount(Item->GetTotalStackCount() +  StackCount);
+	Item->SetTotalStackCount(Item->GetTotalStackCount() + StackCount);
 
 	//Destroy the item if the remainder is zero
 	if (Remainder == 0)

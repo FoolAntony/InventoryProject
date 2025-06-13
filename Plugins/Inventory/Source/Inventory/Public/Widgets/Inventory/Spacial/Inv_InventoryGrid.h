@@ -95,6 +95,9 @@ private:
 	
 	FVector2D GetImageDrawSize (const FInv_GridFragment* GridFragment) const;
 	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem,  const int32 StackAmount);
+
+	UFUNCTION()
+	void AddStacks(const FInv_SlotAvailabilityResult& Result);
 	
 	
 	//=========================
