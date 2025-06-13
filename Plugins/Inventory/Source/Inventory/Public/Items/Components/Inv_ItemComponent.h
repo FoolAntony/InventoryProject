@@ -20,12 +20,15 @@ public:
 	
 	UInv_ItemComponent();
 	FString GetPickupMessage() const {return PickupMessage;}
-
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
 	FInv_ItemManifest GetItemManifest() const {return ItemManifest;}
+	void PickedUp();
+	
 
 protected:
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	void OnPickedUp(); // Bluepring event to trigger other cosmetic systems for the item whe picked up (Niagara, sound, etc.)
 
 private:
 	//=========================
