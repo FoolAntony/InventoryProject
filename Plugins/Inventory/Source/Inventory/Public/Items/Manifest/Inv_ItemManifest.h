@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Types/Inv_GridTypes.h"
 #include "StructUtils/InstancedStruct.h"
+#include "GameplayTagContainer.h"
 #include "Inv_ItemManifest.generated.h"
 
 /** Item manifest contains all necessary data for creating new inventory item */
@@ -21,6 +22,7 @@ public:
 	
 	UInv_InventoryItem* Manifest(UObject* NewOuter);
 	EInv_ItemCategory GetItemCategory() const {return ItemCategory;}
+	FGameplayTag GetItemType() const {return ItemType;}
 
 private:
 	//=========================
@@ -30,6 +32,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	EInv_ItemCategory ItemCategory{EInv_ItemCategory::None};
 
-	
-	
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FGameplayTag ItemType;
 };
