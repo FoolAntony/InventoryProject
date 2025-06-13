@@ -21,9 +21,9 @@ void UInv_SpacialInventory::NativeOnInitialized()
 
 FInv_SlotAvailabilityResult UInv_SpacialInventory::HasRoomForItem(UInv_ItemComponent* ItemComponent) const
 {
-	return Super::HasRoomForItem(ItemComponent);
-
-	
+	FInv_SlotAvailabilityResult Result;
+	Result.TotalRoomToFill = 1;
+	return Result;
 }
 
 void UInv_SpacialInventory::ShowEquippables()
