@@ -2,3 +2,26 @@
 
 
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
+
+#include "Components/Image.h"
+
+void UInv_GridSlot::SetOccupiedTexture()
+{
+	SetGridSlotState(EInv_GridSlotState::Occupied);
+	Image_GridSlot->SetBrush(Brush_Occupied);
+}
+
+void UInv_GridSlot::SetUnoccupiedTexture()
+{
+	SetGridSlotState(EInv_GridSlotState::Unoccupied);
+}
+
+void UInv_GridSlot::SetSelectedTexture()
+{
+	SetGridSlotState(EInv_GridSlotState::Selected);
+}
+
+void UInv_GridSlot::SetGrayedOutTexture()
+{
+	SetGridSlotState(EInv_GridSlotState::GrayedOut);
+}

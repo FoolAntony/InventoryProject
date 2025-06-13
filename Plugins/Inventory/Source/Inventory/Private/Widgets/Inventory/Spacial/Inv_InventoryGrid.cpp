@@ -68,6 +68,7 @@ void UInv_InventoryGrid::AddItemToIndices(const FInv_SlotAvailabilityResult& Res
 	for (const auto& Availability : Result.SlotAvailabilities)
 	{
 		AddItemAtIndex(NewItem, Availability.Index, Result.bStackable, Availability.AmountToFill);
+		UpdateGridSlots(NewItem, Availability.Index);
 	}
 }
 
@@ -127,6 +128,24 @@ FVector2D UInv_InventoryGrid::GetImageDrawSize(const FInv_GridFragment* GridFrag
 {
 	const float IconTileWidth = TileSize - GridFragment->GetGridPadding() * 2;
 	return GridFragment->GetGridSize() * IconTileWidth;
+}
+
+void UInv_InventoryGrid::UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index)
+{
+	check (GridSlots.IsValidIndex(Index));
+
+	const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(NewItem, FragmentTags::GridFragment);
+	if (!GridFragment || !NewItem) return;
+
+	const FIntPoint Dimensions = GridFragment ? GridFragment->GetGridSize() : FIntPoint(1,1);
+
+	UInv_InventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [](UInv_GridSlot* GridSlot)
+	{
+		GridSlot->SetOccupiedTexture();
+	});
+
+	UInv_GridSlot* GridSlot =  GridSlots[Index];
+	GridSlot->SetOccupiedTexture();
 }
 
 void UInv_InventoryGrid::ConstructGrid()

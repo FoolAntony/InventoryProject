@@ -66,6 +66,7 @@ private:
 		const FInv_ImageFragment* ImageFragment) const;
 	
 	FVector2D GetImageDrawSize (const FInv_GridFragment* GridFragment) const;
+	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index);
 	
 	
 	//=========================
