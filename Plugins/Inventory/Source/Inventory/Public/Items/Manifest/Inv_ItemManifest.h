@@ -6,8 +6,10 @@
 #include "GameplayTagContainer.h"
 #include "Inv_ItemManifest.generated.h"
 
+
 /** Item manifest contains all necessary data for creating new inventory item */
 class UInv_InventoryItem;
+struct FInv_ItemFragment;
 
 
 USTRUCT(BlueprintType)
@@ -28,6 +30,9 @@ private:
 	//=========================
 	//	PARAMETERS & VARIABLES
 	//=========================
+
+	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
+	TArray<TInstancedStruct<FInv_ItemFragment>> Fragments;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	EInv_ItemCategory ItemCategory{EInv_ItemCategory::None};
