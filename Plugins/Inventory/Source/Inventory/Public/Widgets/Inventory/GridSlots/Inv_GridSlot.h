@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "VisualizeTexture.h"
 #include "Blueprint/UserWidget.h"
 #include "Inv_GridSlot.generated.h"
 
+class UInv_InventoryItem;
 class UImage;
 /**
  * 
@@ -28,8 +30,18 @@ public:
 	//	FUNCTIONS
 	//====================
 
-	void SetTileIndex(int32 Index) {TileIndex = Index;}
 	int32 GetTileIndex() const {return TileIndex;}
+	int32 GetUpperLeftIndex() const {return UpperLeftIndex;}
+	int32 GetStackCount() const {return StackCount;}
+	void SetTileIndex(int32 Index) {TileIndex = Index;}
+	void SetUpperLeftIndex(const int32 Index) {UpperLeftIndex = Index;}
+	void SetStackCount(const int32 Count) {StackCount = Count;}
+
+	bool IsAvailable() const {return bAvailable;}
+	void SetIsAvailable(const bool bIsAvailable) {bAvailable = bIsAvailable;}
+
+	TWeakObjectPtr<UInv_InventoryItem> GetInventoryItem() const {return InventoryItem;}
+	void SetInventoryItem(UInv_InventoryItem* Item);
 
 	EInv_GridSlotState GetGridSlotState() const {return  GridSlotState;}
 	void SetGridSlotState(const EInv_GridSlotState State) {GridSlotState = State;}
@@ -37,7 +49,7 @@ public:
 	void SetOccupiedTexture();
 	void SetUnoccupiedTexture();
 	void SetSelectedTexture();
-	void  SetGrayedOutTexture();
+	void SetGrayedOutTexture();
 
 private:
 	//=========================
@@ -45,7 +57,12 @@ private:
 	//=========================
 
 	int32 TileIndex;
-
+	int32 StackCount;
+	int32 UpperLeftIndex{INDEX_NONE};
+	bool bAvailable;
+	TWeakObjectPtr<UInv_InventoryItem> InventoryItem;
+	EInv_GridSlotState GridSlotState;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_GridSlot;
 
@@ -60,8 +77,5 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FSlateBrush Brush_GrayedOut;
-
-	EInv_GridSlotState GridSlotState;
-
 
 };
