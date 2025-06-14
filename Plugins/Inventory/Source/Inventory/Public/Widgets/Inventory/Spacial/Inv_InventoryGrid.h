@@ -7,6 +7,7 @@
 #include "Types/Inv_GridTypes.h"
 #include "Inv_InventoryGrid.generated.h"
 
+class UInv_HoverItem;
 struct FInv_ImageFragment;
 struct FInv_GridFragment;
 struct FGameplayTag;
@@ -36,8 +37,6 @@ public:
 
 	UFUNCTION()
 	void AddItem(UInv_InventoryItem* Item);
-	
-	
 
 private:
 	//====================
@@ -50,11 +49,15 @@ private:
 	bool IsUpperLeftSlot(const UInv_GridSlot* GridSlot, const UInv_GridSlot* SubGridSlot) const;
 	bool DoesItemTypeMatch(const UInv_InventoryItem* SubItem, const FGameplayTag& ItemType) const;
 	bool IsInGridBounds(const int32 StartIndex, const FIntPoint& ItemDimensions) const;
+	int32 GetStackAmount(const UInv_GridSlot* GridSlot) const;
+	bool HasValidItem(const UInv_GridSlot* GridSlot) const;
+	bool IsRightClicked(const FPointerEvent& MouseEvent) const;
+	bool IsLeftClicked(const FPointerEvent& MouseEvent) const;
+	
 	int32 DetermineFillAmountForSlot(const bool bStackable,
 									 const int32 MaxStackSize,
 									 const int32 AmountToFill,
 									 const UInv_GridSlot* GridSlot) const;
-	int32 GetStackAmount(const UInv_GridSlot* GridSlot) const;
 	
 	bool CheckSlotConstraints(const UInv_GridSlot* GridSlot,
 							  const UInv_GridSlot* SubGridSlot,
@@ -62,8 +65,6 @@ private:
 							  TSet<int32>& OutTentativelyClaimedIndices,
 							  const FGameplayTag& ItemType,
 							  const int32 MaxStackSize) const;
-	
-	bool HasValidItem(const UInv_GridSlot* GridSlot) const;
 	
 	bool HasRoomAtIndex(const UInv_GridSlot* GridSlot,
 		const FIntPoint Dimensions,
@@ -76,7 +77,11 @@ private:
 	FInv_SlotAvailabilityResult HasRoomForItem (const FInv_ItemManifest& Manifest);
 	void AddItemToIndices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem);
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
-	FIntPoint GetItemDimentions(const FInv_ItemManifest& Manifest) const;
+	FIntPoint GetItemDimensions(const FInv_ItemManifest& Manifest) const;
+	void PickUp(UInv_InventoryItem* ClickedInventoryItem, const int32 GridIndex);
+	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
+	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridSlot);
+	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
 	
 	UInv_SlottedItem* CreateSlottedItem(
 		UInv_InventoryItem* Item,
@@ -86,7 +91,7 @@ private:
 		const FInv_ImageFragment* ImageFragment,
 		const int32 Index);
 
-	void AddSlottedItemToCanvas(const int32 Index, const FInv_GridFragment* GridFragment, UInv_SlottedItem* SlottedItem) const;
+	void AddSlottedItemToCanvas(const int32 Index, const FInv_GridFragment* GridFragment,UInv_SlottedItem* SlottedItem) const;
 	
 	void SetSlottedItemImage(
 		const UInv_SlottedItem* SlottedItem,
@@ -98,6 +103,9 @@ private:
 
 	UFUNCTION()
 	void AddStacks(const FInv_SlotAvailabilityResult& Result);
+
+	UFUNCTION()
+	void OnSlottedItemClicked(int32 GridIndex,const FPointerEvent& MouseEvent);
 	
 	
 	//=========================
@@ -132,4 +140,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	float TileSize;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UInv_HoverItem> HoverItemClass;
+
+	UPROPERTY()
+	TObjectPtr<UInv_HoverItem> HoverItem;
 };
