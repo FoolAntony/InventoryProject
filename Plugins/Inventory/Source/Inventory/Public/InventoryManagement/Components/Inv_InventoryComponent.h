@@ -33,20 +33,16 @@ public:
 	//==================== 
 	
 	UInv_InventoryComponent();
-
 	void ToggleInventoryMenu();
-
 	void AddRepSubobject(UObject* SubObj);
-
+	void Server_AddStacksToItem(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder);
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
 	void TryAddItem(UInv_ItemComponent* ItemComponent);
 
 	UFUNCTION(Server, Reliable)
 	void Server_AddNewItem(UInv_ItemComponent* ItemComponent, int32 StackCount);
-
-	void Server_AddStacksToItem(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder);
-
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//=========================
 	//	PARAMETERS & VARIABLES
@@ -80,15 +76,14 @@ private:
 	UPROPERTY(Replicated)
 	FInv_InventoryFastArray InventoryList;
 	
-	/*Stores currently owning PlayerController */
-	TWeakObjectPtr<APlayerController> OwningController;
-	
 	UPROPERTY()
 	TObjectPtr<UInv_InventoryBase> InventoryMenu;
 	
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UInv_InventoryBase> InventoryMenuClass;
 
+	/*Stores currently owning PlayerController */
+	TWeakObjectPtr<APlayerController> OwningController;
 	bool bInventoryMenuOpen;
 	
 };
