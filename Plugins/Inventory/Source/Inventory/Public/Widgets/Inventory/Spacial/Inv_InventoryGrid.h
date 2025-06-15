@@ -17,6 +17,7 @@ class UInv_ItemComponent;
 class UInv_InventoryComponent;
 class UInv_GridSlot;
 class UCanvasPanel;
+enum class EInv_GridSlotState : uint8;
 
 /**
  * 
@@ -30,6 +31,8 @@ public:
 	//====================
 	//	FUNCTIONS
 	//====================
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float DeltaTime) override;
 	
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
 	virtual void NativeOnInitialized() override;
@@ -82,6 +85,16 @@ private:
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem);
 	void AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridSlot);
 	void RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, const int32 GridIndex);
+	void UpdateTileParameters(const FVector2D& CanvasPosition, const FVector2D MousePosition);
+	FIntPoint CalculateHoveredCoordinates(const FVector2D& CanvasPosition, const FVector2D MousePosition) const;
+	EInv_TileQuadrant CalculateTileQuadrant(const FVector2D& CanvasPosition, const FVector2D MousePosition) const;
+	void OnTileParametersUpdated(const FInv_TileParameters& Parameters);
+	FIntPoint CalculateStartingCoordinate(const FIntPoint& Coordinate, const FIntPoint& Dimensions, const EInv_TileQuadrant Quadrant) const;
+	FInv_SpaceQueryResult CheckHoverPosition(const FIntPoint& Position, const  FIntPoint& Dimensions);
+	bool CursorExitedCanvas(const FVector2D& BoundaryPos, const FVector2D& BoundarySize, const FVector2D& Location);
+	void HighlightSlots(const int32 Index, const FIntPoint& Dimensions);
+	void UnhighlightSlots(const int32 Index, const FIntPoint& Dimensions);
+	void ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, EInv_GridSlotState GridSlotState);
 	
 	UInv_SlottedItem* CreateSlottedItem(
 		UInv_InventoryItem* Item,
@@ -146,4 +159,17 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UInv_HoverItem> HoverItem;
+
+	FInv_TileParameters TileParameters;
+	FInv_TileParameters LastTileParameters;
+
+	//Index where an item will be placed if we click on a grid at a valid location
+	int32 ItemDropIndex {INDEX_NONE};
+
+	FInv_SpaceQueryResult CurrentQueryResult;
+	bool bMouseWithinCanvas;
+	bool bLastMouseWithinCanvas;
+
+	int32 LastHighlightedIndex;
+	FIntPoint LastHighlightedDimensions;
 };

@@ -3,6 +3,7 @@
 
 #include "Widgets/Inventory/Spacial/Inv_InventoryGrid.h"
 
+#include "Inventory.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Widgets/Inventory/GridSlots/Inv_GridSlot.h"
 #include "Components/CanvasPanel.h"
@@ -17,6 +18,244 @@
 #include "Items/Manifest/Inv_ItemManifest.h"
 #include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
 #include "Widgets/Inventory/SlottedItems/Inv_SlottedItem.h"
+
+void UInv_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
+{
+	Super::NativeTick(MyGeometry, DeltaTime);
+
+	const FVector2D CanvasPos = UInv_WidgetUtils::GetWidgetPosition(CanvasPanel);
+	const FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer());
+
+	if (CursorExitedCanvas(CanvasPos, UInv_WidgetUtils::GetWidgetSize(CanvasPanel), MousePos))
+	{
+		return;
+	}
+	
+	UpdateTileParameters(CanvasPos, MousePos);
+}
+
+void UInv_InventoryGrid::UpdateTileParameters(const FVector2D& CanvasPosition, const FVector2D MousePosition)
+{
+	// if mouse not in canvas panel -> return
+
+	if (!bMouseWithinCanvas) return;
+	// Calculate the tile quadrant, tile index and coordinates
+
+	const FIntPoint HoveredTileCoordinates = CalculateHoveredCoordinates(CanvasPosition, MousePosition);
+	LastTileParameters = TileParameters;
+	TileParameters.TileCoordinates = HoveredTileCoordinates;
+	TileParameters.TileIndex = UInv_WidgetUtils::GetIndexFromPosition(HoveredTileCoordinates, Columns);
+	TileParameters.TileQuadrant = CalculateTileQuadrant(CanvasPosition, MousePosition);
+
+	//highlight and unhighlight
+	OnTileParametersUpdated(TileParameters);
+	
+}
+
+void UInv_InventoryGrid::OnTileParametersUpdated(const FInv_TileParameters& Parameters)
+{
+	if (!IsValid(HoverItem)) return;
+
+	//Get Hover Item's dimensions
+	const FIntPoint Dimensions = HoverItem->GetGridDimensions();
+	
+	// Calculate starting coordinate for highlighting
+	const FIntPoint StartingPoint = CalculateStartingCoordinate(Parameters.TileCoordinates, Dimensions, Parameters.TileQuadrant);
+	ItemDropIndex = UInv_WidgetUtils::GetIndexFromPosition(StartingPoint, Columns);
+
+	CurrentQueryResult = CheckHoverPosition(StartingPoint, Dimensions);
+
+	if (CurrentQueryResult.bHasSpace)
+	{
+		HighlightSlots(ItemDropIndex,  Dimensions);
+		return;
+	}
+	UnhighlightSlots(LastHighlightedIndex, LastHighlightedDimensions);
+
+	if (CurrentQueryResult.ValidItem.IsValid() && GridSlots.IsValidIndex(CurrentQueryResult.UpperLeftIndex))
+	{
+		//Single item, swap or add stacks
+		const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(CurrentQueryResult.ValidItem.Get(), FragmentTags::GridFragment);
+
+		ChangeHoverType(CurrentQueryResult.UpperLeftIndex, GridFragment->GetGridSize(), EInv_GridSlotState::GrayedOut);
+	}
+
+}
+
+FInv_SpaceQueryResult UInv_InventoryGrid::CheckHoverPosition(const FIntPoint& Position,
+	const FIntPoint& Dimensions)
+{
+	FInv_SpaceQueryResult Result;
+	
+	// in grid bounds?
+	if (!IsInGridBounds(UInv_WidgetUtils::GetIndexFromPosition(Position, Columns), Dimensions)) return Result;
+
+	Result.bHasSpace = true;
+	
+	// if more than one indices occupied of the same item, does all have the same upper left index?
+
+	TSet<int32> OccupiedUpperLeftIndices;
+	UInv_InventoryStatics::ForEach2D(GridSlots,
+										UInv_WidgetUtils::GetIndexFromPosition(Position, Columns),
+										Dimensions,
+										Columns,
+										[&](const UInv_GridSlot* GridSlot)
+	{
+		if (GridSlot->GetInventoryItem().IsValid())
+		{
+			OccupiedUpperLeftIndices.Add(GridSlot->GetUpperLeftIndex());
+			Result.bHasSpace = false;
+		}
+	});
+	
+	// if so, is there is only one item in the way (can we swap)?
+	if (OccupiedUpperLeftIndices.Num() == 1) // one item at position - valid for swapping/combining
+	{
+		const int32 Index = *OccupiedUpperLeftIndices.CreateConstIterator();
+		Result.ValidItem =  GridSlots[Index]->GetInventoryItem();
+		Result.UpperLeftIndex = GridSlots[Index]->GetUpperLeftIndex();
+	}
+
+	return Result;
+}
+
+bool UInv_InventoryGrid::CursorExitedCanvas(const FVector2D& BoundaryPos, const FVector2D& BoundarySize,
+	const FVector2D& Location)
+{
+	bLastMouseWithinCanvas = bMouseWithinCanvas;
+	bMouseWithinCanvas = UInv_WidgetUtils::IsWithinBounds(BoundaryPos, BoundarySize, Location);
+
+	if (!bMouseWithinCanvas && bLastMouseWithinCanvas)
+	{
+		UnhighlightSlots(LastHighlightedIndex, LastHighlightedDimensions);
+		return true;
+	}
+	return false;
+}
+
+void UInv_InventoryGrid::HighlightSlots(const int32 Index, const FIntPoint& Dimensions)
+{
+	if (!bMouseWithinCanvas) return;
+	
+	UnhighlightSlots(LastHighlightedIndex, LastHighlightedDimensions);
+	UInv_InventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [&](UInv_GridSlot* GridSlot)
+	{
+		GridSlot->SetOccupiedTexture();
+	});
+	
+	LastHighlightedIndex = Index;
+	LastHighlightedDimensions = Dimensions;
+}
+
+void UInv_InventoryGrid::UnhighlightSlots(const int32 Index, const FIntPoint& Dimensions)
+{
+	UInv_InventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [&](UInv_GridSlot* GridSlot)
+	{
+		if (GridSlot->IsAvailable())
+		{
+			GridSlot->SetUnoccupiedTexture();
+		}
+		else
+		{
+			GridSlot->SetOccupiedTexture();
+		}
+	});
+}
+
+void UInv_InventoryGrid::ChangeHoverType(const int32 Index, const FIntPoint& Dimensions,
+	EInv_GridSlotState GridSlotState)
+{
+	UnhighlightSlots(LastHighlightedIndex, LastHighlightedDimensions);
+	UInv_InventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [State = GridSlotState](UInv_GridSlot* GridSlot)
+	{
+		switch (State)
+		{
+		case EInv_GridSlotState::Occupied:
+			GridSlot->SetOccupiedTexture();
+			break;
+		case EInv_GridSlotState::Unoccupied:
+			GridSlot->SetUnoccupiedTexture();
+			break;
+		case EInv_GridSlotState::Selected:
+			GridSlot->SetSelectedTexture();
+			break;
+		case EInv_GridSlotState::GrayedOut:
+			GridSlot->SetGrayedOutTexture();
+			break;
+		}
+	});
+
+	LastHighlightedIndex = Index;
+	LastHighlightedDimensions =  Dimensions;
+}
+
+FIntPoint UInv_InventoryGrid::CalculateStartingCoordinate(const FIntPoint& Coordinate, const FIntPoint& Dimensions,
+                                                          const EInv_TileQuadrant Quadrant) const
+{
+	const int32 HasEvenWidth = Dimensions.X % 2 == 0 ? 1 : 0;
+	const int32 HasEvenHeight = Dimensions.Y % 2 == 0 ? 1 : 0;
+
+	FIntPoint StartingCoordinate;
+	switch (Quadrant)
+	{
+		case EInv_TileQuadrant::TopLeft:
+			StartingCoordinate.X = Coordinate.X - FMath::FloorToInt(0.5f * Dimensions.X);
+			StartingCoordinate.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y);
+			break;
+		case EInv_TileQuadrant::TopRight:
+			StartingCoordinate.X = Coordinate.X - FMath::FloorToInt(0.5f * Dimensions.X) + HasEvenWidth;
+			StartingCoordinate.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y);
+			break;
+		case EInv_TileQuadrant::BottomLeft:
+			StartingCoordinate.X = Coordinate.X - FMath::FloorToInt(0.5f * Dimensions.X);
+			StartingCoordinate.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y) + HasEvenHeight;
+			break;
+		case EInv_TileQuadrant::BottomRight:
+			StartingCoordinate.X = Coordinate.X - FMath::FloorToInt(0.5f * Dimensions.X) + HasEvenWidth;
+			StartingCoordinate.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y) + HasEvenHeight;
+			break;
+		default:
+			UE_LOG(LogInventory, Error, TEXT("Invalid quadrant"))
+			StartingCoordinate = FIntPoint(-1, -1);
+	}
+	
+	return StartingCoordinate;
+}
+
+FIntPoint UInv_InventoryGrid::CalculateHoveredCoordinates(const FVector2D& CanvasPosition,
+                                                          const FVector2D MousePosition) const
+{
+	return FIntPoint {
+		static_cast<int32>(FMath::FloorToInt((MousePosition.X - CanvasPosition.X) / TileSize)),
+		static_cast<int32>(FMath::FloorToInt((MousePosition.Y - CanvasPosition.Y) / TileSize)),
+	};
+}
+
+EInv_TileQuadrant UInv_InventoryGrid::CalculateTileQuadrant(const FVector2D& CanvasPosition,
+	const FVector2D MousePosition) const
+{
+	// Calculate relative position within a current tile
+	const float TileLocalX = FMath::Fmod((MousePosition.X - CanvasPosition.X), TileSize);
+	const float TileLocalY = FMath::Fmod((MousePosition.Y - CanvasPosition.Y), TileSize);
+
+	// Determine which quadrant the mouse is in
+	// Since widgets get drawn from top left to bottom right of the screen, less Y coordinate closer to Top of the widget,
+	// same as less X coordinate closer to the left of the widget.
+	// This allows us to calculate quadrant based on these parameters
+	
+	const bool bIsTop = TileLocalY < TileSize / 2.f; // top if Y is in upper half
+	const bool bIsLeft = TileLocalX < TileSize / 2.f; // left if X is in left half
+
+	EInv_TileQuadrant HoveredTileQuadrant{EInv_TileQuadrant::None};
+	
+	if (bIsTop && bIsLeft) HoveredTileQuadrant = EInv_TileQuadrant::TopLeft;
+	else if (bIsTop && !bIsLeft) HoveredTileQuadrant = EInv_TileQuadrant::TopRight;
+	else if (!bIsTop && bIsLeft) HoveredTileQuadrant = EInv_TileQuadrant::BottomLeft;
+	else if (!bIsTop && !bIsLeft) HoveredTileQuadrant = EInv_TileQuadrant::BottomRight;
+
+	return HoveredTileQuadrant;
+	
+}
 
 void UInv_InventoryGrid::NativeOnInitialized()
 {
@@ -110,9 +349,6 @@ bool UInv_InventoryGrid::IsIndexClaimed(const TSet<int32>& CheckedIndices, const
 {
 	return CheckedIndices.Contains(Index);
 }
-
-
-
 
 bool UInv_InventoryGrid::HasRoomAtIndex(const UInv_GridSlot* GridSlot,
                                         const FIntPoint Dimensions,
@@ -272,7 +508,7 @@ void UInv_InventoryGrid::RemoveItemFromGrid(UInv_InventoryItem* InventoryItem, c
 }
 
 void UInv_InventoryGrid::AssignHoverItem(UInv_InventoryItem* InventoryItem, const int32 GridIndex,
-	const int32 PreviousGridSlot)
+                                         const int32 PreviousGridSlot)
 {
 	AssignHoverItem(InventoryItem);
 
