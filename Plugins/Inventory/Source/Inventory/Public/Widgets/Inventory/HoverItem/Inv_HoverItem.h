@@ -35,7 +35,7 @@ public:
 	void SetGridDimensions(const FIntPoint& NewGridDimensions) {GridDimensions = NewGridDimensions;}
 	void SetPrevGridIndex(const int32 Index) {PreviousGridIndex = Index;}
 	void SetImageBrush (const FSlateBrush& Brush) const;
-	void UpdateStackCount (const int32 Count) const;
+	void UpdateStackCount (const int32 Count);
 	void SetIsStackable(bool bStacks);
 	FGameplayTag GetItemType() const;
 
