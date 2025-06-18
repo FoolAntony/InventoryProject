@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Inv_GridSlot.generated.h"
 
+class UInv_ItemPopUp;
 class UInv_InventoryItem;
 class UImage;
 
@@ -46,6 +47,9 @@ public:
 	TWeakObjectPtr<UInv_InventoryItem> GetInventoryItem() const {return InventoryItem;}
 	void SetInventoryItem(UInv_InventoryItem* Item);
 
+	void SetItemPopUp(UInv_ItemPopUp* NewItemPopUp);
+	UInv_ItemPopUp* GetItemPopUp() const;
+
 	EInv_GridSlotState GetGridSlotState() const {return  GridSlotState;}
 	void SetGridSlotState(const EInv_GridSlotState State) {GridSlotState = State;}
 
@@ -63,6 +67,12 @@ public:
 	FGridSlotEvent GridSlotUnhovered;
 
 private:
+	//====================
+	//	FUNCTIONS
+	//====================
+
+	void OnItemPopUpDestruct(UUserWidget* Menu);
+	
 	//=========================
 	//	PARAMETERS & VARIABLES
 	//=========================
@@ -72,6 +82,7 @@ private:
 	int32 UpperLeftIndex{INDEX_NONE};
 	bool bAvailable{true};
 	TWeakObjectPtr<UInv_InventoryItem> InventoryItem;
+	TWeakObjectPtr<UInv_ItemPopUp> ItemPopUp;
 	EInv_GridSlotState GridSlotState;
 	
 	UPROPERTY(meta = (BindWidget))

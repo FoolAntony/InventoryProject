@@ -18,6 +18,10 @@ void UInv_SpacialInventory::NativeOnInitialized()
 	Button_Consumables->OnClicked.AddDynamic(this, &ThisClass::ShowConsumables);
 	Button_Craftables->OnClicked.AddDynamic(this, &ThisClass::ShowCraftables);
 
+	Grid_Equippables->SetOwningCanvas(CanvasPanel);
+	Grid_Consumables->SetOwningCanvas(CanvasPanel);
+	Grid_Craftables->SetOwningCanvas(CanvasPanel);
+
 	ShowEquippables();
 }
 

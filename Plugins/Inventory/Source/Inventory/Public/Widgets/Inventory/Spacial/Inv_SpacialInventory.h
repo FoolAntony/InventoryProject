@@ -6,6 +6,7 @@
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
 #include "Inv_SpacialInventory.generated.h"
 
+class UCanvasPanel;
 class UInv_InventoryGrid;
 class UWidgetSwitcher;
 class UButton;
@@ -68,6 +69,9 @@ private:
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Button_Craftables;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> CanvasPanel;
 
 	TWeakObjectPtr<UInv_InventoryGrid> ActiveGrid;
 };
